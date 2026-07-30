@@ -13,7 +13,11 @@ const {
 const protect = require("../middleware/authMiddleware");
 
 // Public Routes
-router.get("/", getProducts);
+router.get("/", (req, res) => {
+  res.json({
+    message: "Products route is working"
+  });
+});
 router.get("/:id", getProductById);
 
 // Protected Routes
