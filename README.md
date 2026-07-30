@@ -23,6 +23,7 @@ A full-stack e-commerce application developed using MERN stack.
 
 ## Technologies Used
 
+
 Frontend:
 - React.js
 - Vite
