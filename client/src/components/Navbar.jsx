@@ -1,83 +1,89 @@
-import { createContext, useState } from "react";
+import { Link } from "react-router-dom";
 
 
-export const AuthContext = createContext();
+function Navbar(){
+
+    return (
+
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+
+            <div className="container">
+
+                <Link 
+                    className="navbar-brand" 
+                    to="/"
+                >
+                    E-Commerce
+                </Link>
 
 
+                <div>
 
-function AuthProvider({children}){
-
-
-    const [user,setUser] = useState(
-        JSON.parse(localStorage.getItem("user")) || null
-    );
-
-
-    const [token,setToken] = useState(
-        localStorage.getItem("token") || null
-    );
+                    <Link 
+                        className="btn btn-dark mx-2"
+                        to="/"
+                    >
+                        Home
+                    </Link>
 
 
-
-    const login = (userData,token)=>{
-
-
-        setUser(userData);
-
-        setToken(token);
-
-
-        localStorage.setItem(
-            "user",
-            JSON.stringify(userData)
-        );
+                    <Link 
+                        className="btn btn-dark mx-2"
+                        to="/products"
+                    >
+                        Products
+                    </Link>
 
 
-        localStorage.setItem(
-            "token",
-            token
-        );
+                    <Link 
+                        className="btn btn-dark mx-2"
+                        to="/login"
+                    >
+                        Login
+                    </Link>
 
 
-    };
+                    <Link 
+                        className="btn btn-dark mx-2"
+                        to="/register"
+                    >
+                        Register
+                    </Link>
 
 
-
-    const logout = ()=>{
-
-
-        setUser(null);
-
-        setToken(null);
-
-
-        localStorage.removeItem("user");
-
-        localStorage.removeItem("token");
+                    <Link 
+                        className="btn btn-dark mx-2"
+                        to="/cart"
+                    >
+                        Cart
+                    </Link>
 
 
-    };
+                    <Link 
+                        className="btn btn-dark mx-2"
+                        to="/orders"
+                    >
+                        Orders
+                    </Link>
 
 
+                    <Link 
+                        className="btn btn-dark mx-2"
+                        to="/admin"
+                    >
+                        Admin
+                    </Link>
 
-    return(
 
-        <AuthContext.Provider
-            value={{
-                user,
-                token,
-                login,
-                logout
-            }}
-        >
+                </div>
 
-            {children}
+            </div>
 
-        </AuthContext.Provider>
+        </nav>
 
     );
 
 }
 
 
-export default AuthProvider;
+export default Navbar;
