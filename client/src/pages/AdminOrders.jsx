@@ -1,270 +1,231 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 
-
 function AdminOrders() {
-
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-
 
   useEffect(() => {
     fetchOrders();
   }, []);
 
-
-
   const fetchOrders = async () => {
-
     try {
-
       const response = await API.get("/orders");
 
-      setOrders(response.data);
+      console.log("Orders API Response:", response.data);
+
+      // Backend returns { count, orders }
+      setOrders(response.data.orders || []);
 
     } catch (error) {
+      console.error("Fetch Orders Error:", error);
 
-      console.error(error);
+      if (error.response) {
+        console.log("Status:", error.response.status);
+        console.log("Data:", error.response.data);
 
-      alert("Failed to fetch orders");
-
+        alert(
+          error.response.data?.message ||
+          `Failed to fetch orders. Status: ${error.response.status}`
+        );
+      } else if (error.request) {
+        alert(
+          "No response from backend. Make sure your backend is running on port 5000."
+        );
+      } else {
+        alert(error.message || "Failed to fetch orders");
+      }
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
-
-
   const updateStatus = async (id, status) => {
-
     try {
-
       await API.put(`/orders/${id}`, {
-        status
+        status: status,
       });
 
-
-      alert("Order Status Updated");
-
+      alert("Order Status Updated Successfully");
 
       fetchOrders();
 
-
     } catch (error) {
+      console.error("Update Status Error:", error);
 
       alert(
         error.response?.data?.message ||
-        "Failed to update status"
+        "Failed to update order status"
       );
-
     }
-
   };
 
-
-
   if (loading) {
-
     return (
-
       <div className="container mt-5">
-
-        <h2>
+        <h2 className="text-center">
           Loading Orders...
         </h2>
-
       </div>
-
     );
-
   }
 
-
-
   return (
-
     <div className="container mt-5">
 
-
       <h1 className="text-center fw-bold mb-4">
-
         Order Management
-
       </h1>
 
+      {orders.length === 0 ? (
 
+        <div className="alert alert-info text-center">
+          No orders found.
+        </div>
 
-      <table className="table table-bordered table-hover shadow">
+      ) : (
 
+        <div className="table-responsive">
 
-        <thead className="table-dark">
+          <table className="table table-bordered table-hover shadow">
 
-          <tr>
+            <thead className="table-dark">
 
-            <th>
-              Order ID
-            </th>
+              <tr>
 
-            <th>
-              Products
-            </th>
+                <th>
+                  Order ID
+                </th>
 
-            <th>
-              Total Price
-            </th>
+                <th>
+                  Products
+                </th>
 
-            <th>
-              Status
-            </th>
+                <th>
+                  Total Price
+                </th>
 
-            <th>
-              Action
-            </th>
+                <th>
+                  Status
+                </th>
 
-          </tr>
+                <th>
+                  Action
+                </th>
 
-        </thead>
+              </tr>
 
+            </thead>
 
+            <tbody>
 
-        <tbody>
+              {orders.map((order) => (
 
+                <tr key={order._id}>
 
-        {orders.map((order)=>(
+                  <td>
+                    {order._id}
+                  </td>
 
+                  <td>
 
-          <tr key={order._id}>
+                    {order.items?.map((item) => (
 
+                      <div
+                        key={item._id}
+                        className="mb-2"
+                      >
 
-            <td>
+                        <strong>
+                          Product:
+                        </strong>{" "}
 
-              {order._id}
+                        {typeof item.product === "object"
+                          ? item.product.name
+                          : item.product}
 
-            </td>
+                        <br />
 
+                        <strong>
+                          Quantity:
+                        </strong>{" "}
 
+                        {item.quantity}
 
-            <td>
+                      </div>
 
+                    ))}
 
-              {order.items.map((item)=>(
+                  </td>
 
+                  <td>
+                    ₹{order.totalPrice}
+                  </td>
 
-                <div key={item._id}>
+                  <td>
 
-                  Product ID:
-                  {item.product}
+                    <select
+                      className="form-select"
+                      value={order.status}
+                      onChange={(e) =>
+                        updateStatus(
+                          order._id,
+                          e.target.value
+                        )
+                      }
+                    >
 
-                  <br/>
+                      <option value="Pending">
+                        Pending
+                      </option>
 
-                  Quantity:
-                  {item.quantity}
+                      <option value="Processing">
+                        Processing
+                      </option>
 
+                      <option value="Shipped">
+                        Shipped
+                      </option>
 
-                </div>
+                      <option value="Delivered">
+                        Delivered
+                      </option>
 
+                    </select>
+
+                  </td>
+
+                  <td>
+
+                    <button
+                      className="btn btn-primary"
+                      onClick={() =>
+                        updateStatus(
+                          order._id,
+                          order.status
+                        )
+                      }
+                    >
+                      Update
+                    </button>
+
+                  </td>
+
+                </tr>
 
               ))}
 
+            </tbody>
 
-            </td>
+          </table>
 
+        </div>
 
-
-            <td>
-
-              ₹{order.totalPrice}
-
-            </td>
-
-
-
-            <td>
-
-
-              <select
-
-                className="form-select"
-
-                value={order.status}
-
-                onChange={(e)=>
-                  updateStatus(
-                    order._id,
-                    e.target.value
-                  )
-                }
-
-              >
-
-                <option>
-                  Pending
-                </option>
-
-                <option>
-                  Processing
-                </option>
-
-                <option>
-                  Shipped
-                </option>
-
-                <option>
-                  Delivered
-                </option>
-
-
-              </select>
-
-
-            </td>
-
-
-
-            <td>
-
-
-              <button
-
-                className="btn btn-primary"
-
-                onClick={()=>
-                  updateStatus(
-                    order._id,
-                    order.status
-                  )
-                }
-
-              >
-
-                Update
-
-              </button>
-
-
-            </td>
-
-
-          </tr>
-
-
-        ))}
-
-
-        </tbody>
-
-
-      </table>
-
+      )}
 
     </div>
-
   );
-
 }
-
 
 export default AdminOrders;

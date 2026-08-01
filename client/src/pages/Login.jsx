@@ -1,102 +1,156 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import API from "../services/api";
-import { AuthContext } from "../context/AuthContext";
 
 function Login() {
-
     const navigate = useNavigate();
 
-    const { login } = useContext(AuthContext);
-
     const [email, setEmail] = useState("");
-
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const loginUser = async (e) => {
-
+    const handleLogin = async (e) => {
         e.preventDefault();
 
         try {
+            setLoading(true);
 
-            const response = await API.post(
-                "/auth/login",
-                {
-                    email,
-                    password
-                }
-            );
+            const response = await API.post("/auth/login", {
+                email: email,
+                password: password
+            });
 
-            login(
-                response.data.user,
-                response.data.token
-            );
+            console.log("LOGIN RESPONSE:", response.data);
 
-            alert(response.data.message);
+            // Save JWT token
+            if (response.data.token) {
+                localStorage.setItem(
+                    "token",
+                    response.data.token
+                );
+            } else {
+                alert("Login successful, but no token was received.");
+                return;
+            }
 
-            navigate("/");
+            // Save user information if backend sends it
+            if (response.data.user) {
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify(response.data.user)
+                );
+            }
 
-        }
-        catch (error) {
+            alert("Login Successful!");
+
+            // Go to products page
+            navigate("/products");
+
+        } catch (error) {
+
+            console.error("LOGIN ERROR:", error);
 
             alert(
-                error.response?.data?.message || "Login Failed"
+                error.response?.data?.message ||
+                "Login failed. Please check your email and password."
             );
 
-        }
+        } finally {
 
+            setLoading(false);
+
+        }
     };
 
-    return (
 
+    return (
         <div className="container mt-5">
 
             <div className="row justify-content-center">
 
                 <div className="col-md-6">
 
-                    <h2 className="mb-4">
-                        Login
-                    </h2>
+                    <div className="card shadow">
 
-                    <form onSubmit={loginUser}>
+                        <div className="card-body">
 
-                        <input
-                            type="email"
-                            className="form-control mb-3"
-                            placeholder="Enter Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                            <h2 className="text-center fw-bold mb-4">
+                                Login
+                            </h2>
 
-                        <input
-                            type="password"
-                            className="form-control mb-3"
-                            placeholder="Enter Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
 
-                        <button
-                            className="btn btn-primary w-100"
-                            type="submit"
-                        >
-                            Login
-                        </button>
+                            <form onSubmit={handleLogin}>
 
-                    </form>
+                                {/* Email */}
+
+                                <div className="mb-3">
+
+                                    <label className="form-label">
+                                        Email
+                                    </label>
+
+                                    <input
+                                        type="email"
+                                        className="form-control"
+                                        placeholder="Enter your email"
+                                        value={email}
+                                        onChange={(e) =>
+                                            setEmail(e.target.value)
+                                        }
+                                        required
+                                    />
+
+                                </div>
+
+
+                                {/* Password */}
+
+                                <div className="mb-3">
+
+                                    <label className="form-label">
+                                        Password
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        className="form-control"
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) =>
+                                            setPassword(e.target.value)
+                                        }
+                                        required
+                                    />
+
+                                </div>
+
+
+                                {/* Login Button */}
+
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary w-100"
+                                    disabled={loading}
+                                >
+
+                                    {loading
+                                        ? "Logging in..."
+                                        : "Login"}
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             </div>
 
         </div>
-
     );
-
 }
 
 export default Login;
